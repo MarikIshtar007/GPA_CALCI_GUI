@@ -1,7 +1,6 @@
 from tkinter import *
 import mysql.connector
 from mysql.connector import Error
-from tkinter.ttk import Treeview
 
 root = Tk()
 root.title(" GPA Calculator ")

@@ -5,24 +5,34 @@ from mysql.connector import Error
 root = Tk()
 root.title(" GPA Calculator ")
 
+try:
+    database_check = """CREATE DATABASE IF NOT EXISTS student_gpa"""
+    global connection
+    connection = mysql.connector.connect(host ='localhost',user='root',password='123456')
+    global cursor
+    cursor = connection.cursor()
+    cursor.execute(database_check)
+    set_database = """USE STUDENT_GPA"""
+    cursor.execute(set_database)
+    create_table = """CREATE TABLE IF NOT EXISTS GPAS (Name VARCHAR(250), GPA FLOAT)"""
+    cursor.execute(create_table)
+except Error as e:
+    errorMessage(2)
+
 
 def sql_data_entry():
+    """
+        Enters the data of each student into the database. Throws an error message if anything goes wrong.
+    """
     try:
-        global connection
-        connection = mysql.connector.connect(host='localhost',
-                                             database='student_gpa',
-                                             user='root',
-                                             password='123456')
         mySql_insert_query = """INSERT INTO GPAS VALUES 
                                   (%s, %s) """
         recordTuple = (str(name_entry.get()), gpa)
-        global cursor
-        cursor = connection.cursor()
         cursor.execute(mySql_insert_query, recordTuple)
         connection.commit()
         cursor.close()
     except Error as e:
-        print("Error while connecting to MySQL", e)
+        errorMessage(3)
     finally:
         if connection.is_connected():
             cursor.close()
@@ -32,23 +42,18 @@ def sql_data_entry():
 
 def display_database():
     try:
-        connection = mysql.connector.connect(host='localhost',
-                                             database='student_gpa',
-                                             user='root',
-                                             password='123456')
-        sql_select_Query = "select * from GPAS"
+        sql_select_Query = "select * from GPAS ORDER BY GPA"
         display.delete(1.0, END)
         display.insert(END, "+-----------------------+--------+\n" +
-                      "| NAME OF STUDENT       |   GPA  |\n" +
-                      "+-----------------------+--------+\n")
-        cursor = connection.cursor()
+                       "| NAME OF STUDENT       |   GPA  |\n" +
+                       "+-----------------------+--------+\n")
         cursor.execute(sql_select_Query)
         records = cursor.fetchall()
 
         for row in records:
             display.insert(END, " " + str(row[0]) + "               " + str(row[1]) + "\n")
     except Error as e:
-        print("Error reading data from MySQL table", e)
+        errorMessage(4)
     finally:
         if (connection.is_connected()):
             connection.close()
@@ -59,6 +64,12 @@ def display_database():
 def errorMessage(msg):
     if msg == 1:
         display.insert(1.0, " There has been an error in the input values of the grades and credit values.")
+    elif msg == 2:
+        display.insert(1.0, "There has been an error in database initialization.")
+    elif msg == 3:
+        display.insert(1.0, "Looks like there has been a malfunction while entering data into the DATABASE.")
+    elif msg ==4:
+        display.insert(1.0, "Error reading data from MySQL table")
 
 
 def clearGrades():
@@ -109,8 +120,7 @@ def calculate():
                 elif grade_list[count] == 'F':
                     gradetomarks.append(0)
             '''
-
-            grade2credit = {'O':10, 'A+':9, 'A':8, 'B+':7, 'B':6, 'C':5, 'F':0}
+            grade2credit = {'O': 10, 'A+': 9, 'A': 8, 'B+': 7, 'B': 6, 'C': 5, 'F': 0}
             for gs in grade_list:
                 gradetomarks.append(grade2credit[gs])
 

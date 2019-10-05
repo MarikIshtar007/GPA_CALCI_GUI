@@ -5,10 +5,22 @@ from mysql.connector import Error
 root = Tk()
 root.title(" GPA Calculator ")
 
+
+def errorMessage(msg):
+    if msg == 1:
+        display.insert(1.0, " There has been an error in the input values of the grades and credit values.")
+    elif msg == 2:
+        display.insert(1.0, "There has been an error in database initialization.")
+    elif msg == 3:
+        display.insert(1.0, "Looks like there has been a malfunction while entering data into the DATABASE.")
+    elif msg ==4:
+        display.insert(1.0, "Error reading data from MySQL table")
+
+
 try:
     database_check = """CREATE DATABASE IF NOT EXISTS student_gpa"""
     global connection
-    connection = mysql.connector.connect(host ='localhost',user='root',password='123456')
+    connection = mysql.connector.connect(host='localhost', user='root', password='123456')
     global cursor
     cursor = connection.cursor()
     cursor.execute(database_check)
@@ -52,24 +64,13 @@ def display_database():
 
         for row in records:
             display.insert(END, " " + str(row[0]) + "               " + str(row[1]) + "\n")
-    except Error as e:
+    except Error:
         errorMessage(4)
     finally:
-        if (connection.is_connected()):
+        if connection.is_connected():
             connection.close()
             cursor.close()
             print("MySQL connection is closed")
-
-
-def errorMessage(msg):
-    if msg == 1:
-        display.insert(1.0, " There has been an error in the input values of the grades and credit values.")
-    elif msg == 2:
-        display.insert(1.0, "There has been an error in database initialization.")
-    elif msg == 3:
-        display.insert(1.0, "Looks like there has been a malfunction while entering data into the DATABASE.")
-    elif msg ==4:
-        display.insert(1.0, "Error reading data from MySQL table")
 
 
 def clearGrades():
@@ -100,26 +101,15 @@ def calculate():
                         float(e62.get()), float(e72.get()), float(e82.get())])
 
         def gpacalc(grade_list, credit_list):
+            """
+            The actual gpa calculating logic
+            :param grade_list: Takes the list of grades given
+            :param credit_list: Takes the list of credits given
+            :return:
+            """
             gradetomarks = []
             total = 0
             fincredits = 0
-            '''
-            for count in range(len(grade_list)):
-                if grade_list[count] == 'B':
-                    gradetomarks.append(6)
-                elif grade_list[count] == 'B+':
-                    gradetomarks.append(7)
-                elif grade_list[count] == 'A':
-                    gradetomarks.append(8)
-                elif grade_list[count] == 'A+':
-                    gradetomarks.append(9)
-                elif grade_list[count] == 'O':
-                    gradetomarks.append(10)
-                elif grade_list[count] == 'C':
-                    gradetomarks.append(5)
-                elif grade_list[count] == 'F':
-                    gradetomarks.append(0)
-            '''
             grade2credit = {'O': 10, 'A+': 9, 'A': 8, 'B+': 7, 'B': 6, 'C': 5, 'F': 0}
             for gs in grade_list:
                 gradetomarks.append(grade2credit[gs])
@@ -127,8 +117,8 @@ def calculate():
             for count in range(len(gradetomarks)):
                 total += gradetomarks[count] * credit_list[count]
 
-            for gpa in credit_list:
-                fincredits += int(gpa)
+            for gp in credit_list:
+                fincredits += int(gp)
             finalgpa = total / fincredits
             fingpa = str(round(finalgpa, 2))
             return fingpa
@@ -233,9 +223,11 @@ emp = Label(root, text=" ").grid(row=9, column=0)
 # Calculate Button
 cal = Button(root, text="Calculate", width=25, command=calculate, bd=5)
 cal.grid(row=11, column=1)
+
 # Database Button
 show_databases = Button(root, text="Show Database", width=25, bd=5, command=display_database)
 show_databases.grid(row=11, column=2)
+
 # Clear Button
 clear = Button(root, text="Clear All", width=25, bd=5, command=clearAll)
 clear.grid(row=11, column=0)

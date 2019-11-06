@@ -8,34 +8,40 @@ root.title(" GPA Calculator ")
 
 def errorMessage(msg):
     if msg == 1:
-        display.insert(1.0, " There has been an error in the input values of the grades and credit values.")
+        display.insert(1.0, " There's an error in the input values of the grades and credits.")
     elif msg == 2:
         display.insert(1.0, "There has been an error in database initialization.")
     elif msg == 3:
         display.insert(1.0, "Looks like there has been a malfunction while entering data into the DATABASE.")
-    elif msg ==4:
+    elif msg == 4:
         display.insert(1.0, "Error reading data from MySQL table")
 
-
-try:
-    database_check = """CREATE DATABASE IF NOT EXISTS student_gpa"""
-    global connection
-    connection = mysql.connector.connect(host='localhost', user='root', password='123456')
-    global cursor
-    cursor = connection.cursor()
-    cursor.execute(database_check)
-    set_database = """USE STUDENT_GPA"""
-    cursor.execute(set_database)
-    create_table = """CREATE TABLE IF NOT EXISTS GPAS (Name VARCHAR(250), GPA FLOAT)"""
-    cursor.execute(create_table)
-except Error as e:
-    errorMessage(2)
+def dbinit():
+    """
+    Method used to make sure the connection to the MySQL is established each time it is required.
+    #Try to find a feasible solution. Probably look into sqlite or some other databases. How about firebase?
+    :return:
+    """
+    try:
+        database_check = """CREATE DATABASE IF NOT EXISTS student_gpa"""
+        global connection
+        connection = mysql.connector.connect(host='localhost', user='root', password='123456')
+        global cursor
+        cursor = connection.cursor()
+        cursor.execute(database_check)
+        set_database = """USE STUDENT_GPA"""
+        cursor.execute(set_database)
+        create_table = """CREATE TABLE IF NOT EXISTS GPAS (Name VARCHAR(250), GPA FLOAT)"""
+        cursor.execute(create_table)
+    except Error as e:
+        errorMessage(2)
 
 
 def sql_data_entry():
     """
         Enters the data of each student into the database. Throws an error message if anything goes wrong.
     """
+    dbinit()
     try:
         mySql_insert_query = """INSERT INTO GPAS VALUES 
                                   (%s, %s) """
@@ -53,6 +59,7 @@ def sql_data_entry():
 
 
 def display_database():
+    dbinit()
     try:
         sql_select_Query = "select * from GPAS ORDER BY GPA"
         display.delete(1.0, END)
@@ -64,8 +71,9 @@ def display_database():
 
         for row in records:
             display.insert(END, " " + str(row[0]) + "               " + str(row[1]) + "\n")
-    except Error:
+    except Error as e:
         errorMessage(4)
+        print(e)
     finally:
         if connection.is_connected():
             connection.close()
@@ -105,7 +113,7 @@ def calculate():
             The actual gpa calculating logic
             :param grade_list: Takes the list of grades given
             :param credit_list: Takes the list of credits given
-            :return:
+            :return: The calculated gpa value
             """
             gradetomarks = []
             total = 0
@@ -129,13 +137,12 @@ def calculate():
         res_entry.delete(0, END)
         res_entry.insert(string=gpa, index=0)
         display.delete(1.0, END)
+        sql_data_entry()
         display.insert(1.0, "\n Name: " + name_entry.get() + "\n Grade Point Average: " + gpa +
                        "\n Data entered Successfully in the Database. \n")
 
     except ValueError:
         errorMessage(1)
-
-    sql_data_entry()
 
 
 def clearAll():

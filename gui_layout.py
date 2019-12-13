@@ -5,16 +5,25 @@ from mysql.connector import Error
 root = Tk()
 root.title(" GPA Calculator ")
 
+'''
+	See, what you can do, is try to make another method, say something like dbclose.
+	Look up something on Tkinter, that allows you to execute the method upon closing the window.
+	That way you can initialize the database connection once when the window opens up and not repeatedly.
+	And end up closing it once and only once when the window itself gets closed.
+
+'''
+
 
 def errorMessage(msg):
-    if msg == 1:
-        display.insert(1.0, " There's an error in the input values of the grades and credits.")
-    elif msg == 2:
-        display.insert(1.0, "There has been an error in database initialization.")
-    elif msg == 3:
-        display.insert(1.0, "Looks like there has been a malfunction while entering data into the DATABASE.")
-    elif msg == 4:
-        display.insert(1.0, "Error reading data from MySQL table")
+    errDict = {
+        1 : "There's an error in the input values of the grades and credits.",
+        2 : "There has been an error in database initialization.",
+        3 : "Looks like there has been a malfunction while entering data into the DATABASE.",
+        4 : "Error reading data from MySQL table",
+        5 : "Error in the Termination of Database Connection"
+    }
+    display.insert(1.0, errDict[msg])
+
 
 def dbinit():
     """
@@ -24,12 +33,12 @@ def dbinit():
     """
     try:
         database_check = """CREATE DATABASE IF NOT EXISTS student_gpa"""
+        set_database = """USE STUDENT_GPA"""
         global connection
         connection = mysql.connector.connect(host='localhost', user='root', password='123456')
         global cursor
         cursor = connection.cursor()
         cursor.execute(database_check)
-        set_database = """USE STUDENT_GPA"""
         cursor.execute(set_database)
         create_table = """CREATE TABLE IF NOT EXISTS GPAS (Name VARCHAR(250), GPA FLOAT)"""
         cursor.execute(create_table)
@@ -37,11 +46,20 @@ def dbinit():
         errorMessage(2)
 
 
+def dbclose():
+    try:
+        connection.close()
+        cursor.close()
+        print("MySQL connection is closed")
+    except Error as e:
+        errorMessage(5)
+        print(e)
+
+
 def sql_data_entry():
     """
         Enters the data of each student into the database. Throws an error message if anything goes wrong.
     """
-    dbinit()
     try:
         mySql_insert_query = """INSERT INTO GPAS VALUES 
                                   (%s, %s) """
@@ -51,21 +69,16 @@ def sql_data_entry():
         cursor.close()
     except Error as e:
         errorMessage(3)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-            print("MySQL connection is closed")
+        print(e)
 
 
 def display_database():
-    dbinit()
     try:
         sql_select_Query = "select * from GPAS ORDER BY GPA"
         display.delete(1.0, END)
         display.insert(END, "+-----------------------+--------+\n" +
-                       "| NAME OF STUDENT       |   GPA  |\n" +
-                       "+-----------------------+--------+\n")
+                            "| NAME OF STUDENT       |   GPA  |\n" +
+                            "+-----------------------+--------+\n")
         cursor.execute(sql_select_Query)
         records = cursor.fetchall()
 
@@ -74,11 +87,6 @@ def display_database():
     except Error as e:
         errorMessage(4)
         print(e)
-    finally:
-        if connection.is_connected():
-            connection.close()
-            cursor.close()
-            print("MySQL connection is closed")
 
 
 def clearGrades():
@@ -125,8 +133,7 @@ def calculate():
             for count in range(len(gradetomarks)):
                 total += gradetomarks[count] * credit_list[count]
 
-            for gp in credit_list:
-                fincredits += int(gp)
+            fincredits = sum(credit_list)
             finalgpa = total / fincredits
             fingpa = str(round(finalgpa, 2))
             return fingpa
@@ -227,6 +234,17 @@ e82.grid(row=8, column=2)
 
 emp = Label(root, text=" ").grid(row=9, column=0)
 
+# Name Entry Box
+name_label = Label(root, text=" Enter your Name: ", padx=5, pady=5)
+name_label.grid(row=10, column=0)
+
+name_entry = Entry(root, width=25, bd=5)
+name_entry.grid(row=10, column=1)
+
+# Clear Button
+clear = Button(root, text="Clear All", width=25, bd=5, command=clearAll)
+clear.grid(row=11, column=0)
+
 # Calculate Button
 cal = Button(root, text="Calculate", width=25, command=calculate, bd=5)
 cal.grid(row=11, column=1)
@@ -234,17 +252,6 @@ cal.grid(row=11, column=1)
 # Database Button
 show_databases = Button(root, text="Show Database", width=25, bd=5, command=display_database)
 show_databases.grid(row=11, column=2)
-
-# Clear Button
-clear = Button(root, text="Clear All", width=25, bd=5, command=clearAll)
-clear.grid(row=11, column=0)
-
-# Name Entry Box
-name_label = Label(root, text=" Enter your Name: ", padx=5, pady=5)
-name_label.grid(row=10, column=0)
-
-name_entry = Entry(root, width=25, bd=5)
-name_entry.grid(row=10, column=1)
 
 res = Label(root, text="Final GPA : ", padx=5, pady=5)
 res.grid(row=12, column=0)
@@ -262,4 +269,6 @@ S.pack(side=RIGHT, fill=Y)
 display.pack(side=LEFT, fill=Y)
 S.config(command=display.yview)
 display.config(yscrollcommand=S.set)
+dbinit()
 root.mainloop()
+dbclose()

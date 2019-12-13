@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d821ca75-87fe-4cbb-a85c-f0ff4f377ee2" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/GPA_Calci_GUI.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GPA_Calci_GUI.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui_layout.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui_layout.py" afterDir="false" />
     </list>
@@ -28,7 +26,7 @@
   <component name="ProjectId" id="1Ps5HldSZiBuXdb3UCP9Gwiltp5" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="C:/Program Files/Git/bin/git.exe" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">

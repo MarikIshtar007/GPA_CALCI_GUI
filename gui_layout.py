@@ -260,7 +260,7 @@ res_entry = Entry(root, width=15, justify="center", bd=5)
 res_entry.grid(row=12, column=1)
 
 emp1 = Label(root, text=" ").grid(row=13, column=0)
-t1 = Frame(master=root, bd=5)
+t1 = Frame(main=root, bd=5)
 t1.grid(row=14, column=1)
 
 S = Scrollbar(t1)
